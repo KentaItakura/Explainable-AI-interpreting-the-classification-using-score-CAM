@@ -6,7 +6,10 @@ This example shows how to use score-CAM (class activation mapping) [1] to invest
 
 [2] MATLAB documentation: "[Investigate Network Predictions Using Class Activation Mapping](https://jp.mathworks.com/help/deeplearning/ug/investigate-network-predictions-using-class-activation-mapping.html)"  
 
-[3] Zhou, B., Khosla, A., Lapedriza, A., Oliva, A. and Torralba, A., 2016. Learning deep features for discriminative localization. In *Proceedings of the IEEE conference on computer vision and pattern recognition* (pp. 2921-2929). 
+[3] Zhou, B., Khosla, A., Lapedriza, A., Oliva, A. and Torralba, A., 2016. Learning deep features for discriminative localization. In *Proceedings of the IEEE conference on computer vision and pattern recognition* (pp. 2921-2929).  
+
+**The official implementation of Score-CAM is located [here](https://github.com/haofanwang/Score-CAM).**
+
 
 # Load Pretrained Network 
 
