@@ -1,15 +1,24 @@
 # Explainable AI: interpreting the classification using score-CAM
 
-This example shows how to use score-CAM (class activation mapping) [1] to investigate and explain the predictions of a deep convolutional neural network for image classification. This code was created with reference to Matlab official document [2]. 
+**[English]**
+
+This example shows how to use score-CAM (class activation mapping) [1] to investigate and explain the predictions of a deep convolutional neural network for image classification. The algorithm like CAM [2] and grad-CAM [3] are popular for explainable AI with image classification, but Score-CAM proposed a "gradient-free" method for the explanation. [The original implementation can be found here](https://github.com/haofanwang/Score-CAM). 
+
+**[Japanese]**
+
+このスクリプトでは、畳み込み込みニューラルネットワーク（CNN）を用いて画像分類を行ったときの、その分類の判断根拠の可視化を行います。Score-CAMと呼ばれる手法を実装したいと思います。[著者らによるオリジナルの実装のページはこちら](https://github.com/haofanwang/Score-CAM)です。
+
+なお、本内容は、[こちらのブログ](https://kentapt.hatenablog.com/entry/2021/12/16/105958)でより詳しく、日本語で書かれています。よろしければぜひご覧ください。
+
+  
+
+**Keywords**: classification, deep learning, explainable AI, gradient, Score-CAM
 
 [1] Wang, H., Du, M., Yang, F. and Zhang, Z., 2019. Score-CAM: Improved Visual Explanations Via Score-Weighted Class Activation Mapping. *arXiv preprint arXiv:1910.01279*.
 
-[2] MATLAB documentation: "[Investigate Network Predictions Using Class Activation Mapping](https://jp.mathworks.com/help/deeplearning/ug/investigate-network-predictions-using-class-activation-mapping.html)"  
+[2] Zhou, B., Khosla, A., Lapedriza, A., Oliva, A. and Torralba, A., 2016. Learning deep features for discriminative localization. In *Proceedings of the IEEE conference on computer vision and pattern recognition* (pp. 2921-2929). 
 
-[3] Zhou, B., Khosla, A., Lapedriza, A., Oliva, A. and Torralba, A., 2016. Learning deep features for discriminative localization. In *Proceedings of the IEEE conference on computer vision and pattern recognition* (pp. 2921-2929).  
-
-**The official implementation of Score-CAM is located [here](https://github.com/haofanwang/Score-CAM).**
-
+[3] [Selvaraju, R.R., Cogswell, M., Das, A., Vedantam, R., Parikh, D. and Batra, D., 2017. Grad-cam: Visual explanations from deep networks via gradient-based localization. In Proceedings of the IEEE international conference on computer vision (pp. 618-626).](https://openaccess.thecvf.com/content_iccv_2017/html/Selvaraju_Grad-CAM_Visual_Explanations_ICCV_2017_paper.html)
 
 # Load Pretrained Network 
 
@@ -36,6 +45,7 @@ layerName = activationLayerName(netName);
 Compute the activations of the resized image in the ReLU layer that follows the last convolutional layer of the network.
 
 ```matlab:Code
+addpath('testImg\')
 im = imread('CatImg.png');
 imResized = imresize(im,[inputSize(1:2)]);
 ```
@@ -43,7 +53,7 @@ imResized = imresize(im,[inputSize(1:2)]);
 # Classify the target image into a category 
 
 ```matlab:Code
-[PredCategory,~]=classify(net,imResized);
+[PredCategory,scoreBaseLine]=classify(net,imResized);
 PredCategory
 ```
 
@@ -106,8 +116,11 @@ Use `classify` function to predict and extract the score for the target class
 
 ```matlab:Code
 % specify minibatch size. Return an error if the memory is not enough   
+% score: (the number of test image)-by-(the number of class (1000))
 [PredCategory,score]=classify(net,uint8(maskedInputImg),'MiniBatchSize',32);
 score_target_class=score(:,classIdx);
+CIC=score_target_class-scoreBaseLine(classIdx);
+CIC_norm=softmax(CIC);
 ```
 
 # Multiply the featuremap with the score with corresponding input mask image 
@@ -115,7 +128,7 @@ score_target_class=score(:,classIdx);
 Generate course heat map for your final result. The size of the course map is identical to the size of the feature map.  
 
 ```matlab:Code
-score_CAM_prep=featureMap_normalized.*reshape(score_target_class,[1 1 numel(score_target_class)]);
+score_CAM_prep=featureMap_normalized.*reshape(CIC_norm,[1 1 numel(CIC_norm)]);
 score_CAM_sum=sum(score_CAM_prep,3);
 ```
 
